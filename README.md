@@ -10,3 +10,7 @@ You will need Python and wxPython. Once you have them and assuming you are on wi
 - [ ] Tidy up & comments
 - [x] Align status bar correctly
 - [ ] Bug testing
+- [ ] Tag code generation (ex. 08061202 == YPS(08), Vatsetter(05), 12(12th), 02(Feb))
+- [ ] Store site and Packing station nubers in an editable file
+- [ ] Move functions which only need to update on input out of update and into event handlers
+
