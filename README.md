@@ -8,5 +8,5 @@ You will need Python and wxPython. Once you have them and assuming you are on wi
 ## Possible future improvements / problems
 - [ ] Saving and loading of current state
 - [ ] Tidy up & comments
-- [ ] Status bar not aligned correctly status should be left aligned, DateTime should be centre and version right
+- [x] Align status bar correctly
 - [ ] Bug testing

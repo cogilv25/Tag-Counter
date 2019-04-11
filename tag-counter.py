@@ -11,10 +11,7 @@
 
 # TODO:
 # 1)Saving and loading of current state
-# 2)Tidy up & comments
-# 3)Status bar not aligned correctly
-# status should be left aligned, DateTime
-# should be centred and version right
+# 2)Tidy up & comment
 # 4)Bug testing
 
 import wx
@@ -36,6 +33,40 @@ class StoppableThread(threading.Thread):
 	def isStopped(self):
 		return self.stopEvent.is_set()
 
+class CustomStatusBar(wx.StatusBar):
+	def __init__(self, parent):
+		wx.StatusBar.__init__(self, parent, -1)
+
+		self.SetFieldsCount(3)
+		self.SetStatusWidths([-1,-1,-1])
+
+		self.versionLabel = wx.StaticText(self, -1, "Version: " + version)
+		self.timeLabel = wx.StaticText(self, -1, time.strftime("%H:%M:%S",time.localtime(time.time())))
+		self.repositionFields()
+
+		self.Bind(wx.EVT_SIZE, self.onResize)
+
+	def onResize(self, event):
+		self.repositionFields()
+
+	def repositionFields(self):
+		versionFieldRect = self.GetFieldRect(2)
+		versionLabelRect = self.versionLabel.GetRect()
+
+		timeFieldRect = self.GetFieldRect(1)
+		timeLabelRect = self.timeLabel.GetRect()
+
+		versionFieldRect.x += versionFieldRect.width - versionLabelRect.width
+		versionFieldRect.width = versionLabelRect.width
+		versionFieldRect.y += 3
+
+		timeFieldRect.x += timeFieldRect.width/2 - timeLabelRect.width/2
+		timeFieldRect.width = timeLabelRect.width
+		timeFieldRect.y += 3
+
+		self.timeLabel.SetRect(timeFieldRect)
+		self.versionLabel.SetRect(versionFieldRect)
+
 
 class Frame(wx.Frame):
 	def __init__(self, *args, **kw):
@@ -44,7 +75,6 @@ class Frame(wx.Frame):
 		self.st = wx.StaticText(self.panel, label="Modifiable Parameters", pos=(25,25))
 		self.st2 = wx.StaticText(self.panel, label="Information", pos =(350,25))
 		self.timeLabel = wx.StaticText(self.panel, label="", pos =(350,600))
-		self.status = "Running"
 
 		font = self.st.GetFont()
 		font.PointSize +=5
@@ -64,9 +94,12 @@ class Frame(wx.Frame):
 		self.MakeMenuBar()
 		self.Bind(wx.EVT_BUTTON, self.OnButtonPress, self.button)
 
-		self.CreateStatusBar()
-		self.SetStatusText(self.status +
-		 "\t" + time.ctime(time.time()) + "\tVersion: " + version)
+		#self.CreateStatusBar()
+		#self.SetStatusText(self.status +
+		# "\t" + time.ctime(time.time()) + "\tVersion: " + version)
+		self.statusbar = CustomStatusBar(self)
+		self.SetStatusBar(self.statusbar)
+		self.statusbar.SetStatusText("Running")
 
 		wx.StaticText(self.panel, label="Progress", pos = (350,60))
 		self.gauge = wx.Gauge(self.panel, pos = (350,80))
@@ -101,7 +134,7 @@ class Frame(wx.Frame):
 		if(thread.isStopped()):
 			event.Skip()
 		thread.stop()
-		self.SetStatusText("Closing...")
+		#self.SetStatusText("Closing...")
 
 
 	def OnSave(self, event):
@@ -115,11 +148,13 @@ class Frame(wx.Frame):
 
 	def OnButtonPress(self, event):
 		self.tagsPrinted.SetValue(self.tagsPrinted.GetValue() + self.tagsPerTray.GetValue())
+		self.statusbar.versionLabel.SetLabel("Hello no 2")
+		self.statusbar.repositionFields()
 
 	def update(self):
 		while(not thread.isStopped()):
-			self.SetStatusText(self.status + "\t\t" + time.ctime(time.time()) +
-			 "\t\tVersion: " + version)
+			#self.SetStatusText(self.status + "\t\t" + time.ctime(time.time()) +
+			# "\t\tVersion: " + version)
 			traysToGo = int((self.tagTarget.GetValue() - self.tagsPrinted.GetValue()) / self.tagsPerTray.GetValue() + .99)
 			self.gauge.SetValue(self.tagsPrinted.GetValue()/self.tagTarget.GetValue()*100)
 
